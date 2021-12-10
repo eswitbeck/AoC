@@ -24,7 +24,6 @@ int main(int argc, char** argv){
   }
   std::vector<int> draws;
   std::vector<int> tables;
-  int g=0;
   for(auto i = numbersUnsplit.begin(); i != numbersUnsplit.end(); ++i){
     if(i==numbersUnsplit.begin()){
       std::stringstream ss3(*i);
@@ -35,7 +34,6 @@ int main(int argc, char** argv){
     } else {
         tables.push_back(std::stoi(*i));
     }
-    ++g;
   }
   int l{0};
   std::vector<int> orderedWins;
@@ -72,7 +70,6 @@ std::vector<int> giveBoardPosition(int& n){
 }
 bool checkForWin(int n, std::vector<int>::iterator it){
   int horizontalWin{0}, verticalWin{0};
-
   for(int i=(giveBoardPosition(n)[2]); i>0; --i){
     if(*it != *(prev(it, i))){
       horizontalWin = 1;
