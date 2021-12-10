@@ -24,7 +24,6 @@ int main(int argc, char** argv){
   }
   std::vector<int> draws;
   std::vector<int> tables;
-  int g=0;
   for(auto i = numbersUnsplit.begin(); i != numbersUnsplit.end(); ++i){
     if(i==numbersUnsplit.begin()){
       std::stringstream ss3(*i);
@@ -35,7 +34,6 @@ int main(int argc, char** argv){
     } else {
         tables.push_back(std::stoi(*i));
     }
-    ++g;
   }
   int l{0};
   for(const auto& tok : draws){
