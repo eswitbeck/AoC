@@ -28,9 +28,9 @@ function letterValue (letter) {
 let total = splitIntoTrios(
   listOfSupplies.split('\n')
 ).map(
-  trio => commonItem(trio)
+  commonItem
 ).map(
-  letter => letterValue(letter)
+  letterValue
 ).reduce((a,b) => a + b);
 
 console.log(total);

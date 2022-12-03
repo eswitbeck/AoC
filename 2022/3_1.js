@@ -16,9 +16,9 @@ function commonItem([first, second]) {
 }
 
 let total = listOfSupplies.split('\n').map(
-  str => splitIntoCompartments(str)
+  splitIntoCompartments
 ).map(
-  pair => commonItem(pair)
+  commonItem
 ).map(
   letter => {
     if(letter == letter.toUpperCase()) {
