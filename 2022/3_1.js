@@ -15,18 +15,17 @@ function commonItem([first, second]) {
   }
 }
 
-let total = listOfSupplies.split('\n').map(
-  splitIntoCompartments
-).map(
-  commonItem
-).map(
-  letter => {
-    if(letter == letter.toUpperCase()) {
-      return alphabet.indexOf(letter.toLowerCase()) + 27;
-    } else {
-      return alphabet.indexOf(letter.toLowerCase()) + 1;
-    }
-  }
-).reduce((a,b) => a + b);
+let total = listOfSupplies.split('\n')
+  .map(splitIntoCompartments)
+  .map(commonItem)
+  .map(
+    letter => {
+      if(letter == letter.toUpperCase()) {
+        return alphabet.indexOf(letter.toLowerCase()) + 27;
+      } else {
+        return alphabet.indexOf(letter.toLowerCase()) + 1;
+      }
+    })
+  .reduce((a,b) => a + b);
 
 console.log(total);

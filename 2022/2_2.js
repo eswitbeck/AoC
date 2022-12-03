@@ -45,10 +45,9 @@ const playRps = (theirs, yours) => {
   }
 }
 
-let total = games.split('\n').map(
-  translate
-).map(
-  ([theirs, yours]) => playRps(theirs, yours) + scores[yours]
-).reduce((a,b) => a + b, 0)
+let total = games.split('\n')
+  .map(translate)
+  .map(([theirs, yours]) => playRps(theirs, yours) + scores[yours])
+  .reduce((a,b) => a + b)
 
 console.log(total);

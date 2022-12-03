@@ -30,14 +30,14 @@ const playRps = (theirs, yours) => {
   }
 }
 
-let total = games.split('\n').map(
-  pair => pair.split(' ').map(
-    coded => cipher[coded.toLowerCase()]
-  )
-).map(
-  ([theirs,yours]) => {
-    return playRps(theirs, yours) + scores[yours];
-  }
-).reduce((a,b) => a + b, 0)
+let total = games.split('\n')
+  .map(
+    pair => pair.split(' ')
+      .map(coded => cipher[coded.toLowerCase()]))
+  .map(
+    ([theirs,yours]) => {
+      return playRps(theirs, yours) + scores[yours];
+    })
+  .reduce((a,b) => a + b, 0)
 
 console.log(total);
