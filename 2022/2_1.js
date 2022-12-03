@@ -35,8 +35,7 @@ let total = games.split('\n').map(
     coded => cipher[coded.toLowerCase()]
   )
 ).map(
-  choices => {
-    let theirs = choices[0], yours = choices[1];
+  ([theirs,yours]) => {
     return playRps(theirs, yours) + scores[yours];
   }
 ).reduce((a,b) => a + b, 0)
