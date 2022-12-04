@@ -3,17 +3,16 @@ const {readFileSync} = require('fs');
 const pair = readFileSync('.\\4_input','utf-8').trimEnd();
 
 let total = pair.split('\n')
-  .map(entry => entry.split(','))
+  .map(entry => entry.split(',')
+    .map(e => e.split('-').map(Number)))
   .filter (checkForCommon)
   .length;
 
 console.log(total);
 
-function checkForCommon ([a, b]) {
-  let c = a.split('-').map(Number), d = b.split('-').map(Number);
-  let condition = ((c[0] <= d[0]) && (c[1] >= d[0])) ||
-                  ((d[0] <= c[0]) && (d[1] >= c[0])) ||
-                  ((c[0] <= d[1]) && (c[1] >= d[1])) ||
-                  ((d[0] <= c[1]) && (d[1] >= c[1]))
-  return condition;
+function checkForCommon ([[c0,c1],[d0,d1]]) {
+  return ((c0 <= d0) && (c1 >= d0)) ||
+         ((d0 <= c0) && (d1 >= c0)) ||
+         ((c0 <= d1) && (c1 >= d1)) ||
+         ((d0 <= c1) && (d1 >= c1))
 }
