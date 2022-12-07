@@ -20,18 +20,19 @@ class Dir {
       })
       .reduce((a,b) => a + b, 0);
   }
+  lsRecurse() {
+    let wrapper = (file) => {
+      if (typeof file != 'number') {
+        return [file.sumContents()].concat(
+          Object.values(file.storage).map(wrapper).flat());
+      } else return [];
+    }
+    return wrapper(this);
+  }
   funkySum () {
-    let sum = 0;
-    Object.values(this.storage)
-      .map( v => {
-        if (typeof v == 'number') sum += 0;
-        else if (v.sumContents() <= 100000) {
-          sum += (v.sumContents() + v.funkySum());
-        } else {
-          sum += v.funkySum()
-        };
-      });
-    return sum;
+    return this.lsRecurse()
+      .filter(f => f <= 100000)
+      .reduce((a,b) => a + b, 0)
   }
 }
 
