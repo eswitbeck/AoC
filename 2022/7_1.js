@@ -1,14 +1,9 @@
-const {readFileSync} = require('fs');
-
-const input = readFileSync('.\\7_input','utf-8');
-
-let commands = input.split('\$ ').slice(2);
-
 class Dir {
   constructor() {
     this.storage = {};
   }
-  addFile ([size,name]) {
+
+  addFile ([size, name]) {
     if(size == 'dir') this.storage[name] = new Dir();
     else this.storage[name] = Number(size);
   }
@@ -20,28 +15,28 @@ class Dir {
       })
       .reduce((a,b) => a + b, 0);
   }
-  lsRecurse() { // return flattened deep list of only directory sizes
-    let wrapper = (file) => {
-      if (typeof file != 'number') {
-        return [file.sumContents()].concat(
+  lsRecurse() { //return flattened tree
+    let wrapper = (file) => { 
+      if (typeof file == 'number') { 
+        return [file];
+      } else {
+        return [file].concat(
           Object.values(file.storage).map(wrapper).flat());
-      } else return [];
+      }
     }
     return wrapper(this);
   }
   funkySum () {
     return this.lsRecurse()
+      .filter(f => typeof f != 'number')
+      .map(f => f.sumContents())
       .filter(f => f <= 100000)
       .reduce((a,b) => a + b, 0)
   }
 }
 
-
-
-let root = new Dir();
-
-function populateDir (input) {
-  let dest = root;
+function populateDir (input, directory) {
+  let dest = directory;
   let history = [];
   for (command of input) {
 
@@ -70,5 +65,10 @@ function parseFile (file, destination) {
   destination.addFile(filePair);
 }
 
-populateDir(commands);
-console.log(root.funkySum());
+const {readFileSync} = require('fs');
+const input = readFileSync('.\\7_input','utf-8');
+let commands = input.split('\$ ').slice(2);
+
+let root = new Dir();
+populateDir(commands, root);
+console.log(root.funkySum());`
