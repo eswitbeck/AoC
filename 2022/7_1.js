@@ -2,9 +2,7 @@ const {readFileSync} = require('fs');
 
 const input = readFileSync('.\\7_input','utf-8');
 
-let commands = input.split('\$ ');
-commands.shift();
-commands.shift();
+let commands = input.split('\$ ').slice(2);
 
 class Dir {
   constructor() {
@@ -20,7 +18,7 @@ class Dir {
         if (typeof v == 'number') return v;
         else return v.sumContents();
       })
-      .reduce((a,b) => a + b,0);
+      .reduce((a,b) => a + b, 0);
   }
   funkySum () {
     let sum = 0;
@@ -41,19 +39,19 @@ class Dir {
 
 let root = new Dir();
 
-function populateDir (contents) {
+function populateDir (input) {
   let dest = root;
   let history = [];
-  for (command of contents) {
+  for (command of input) {
 
-    let files = command.split('\n');
-    files.pop();
+    let commands = command.split('\n');
+    commands.pop();
 
-    if (files[0][0] == 'l') {
-      files.slice(1).map(f => parseFile(f, dest));
+    if (commands[0][0] == 'l') { //ls
+      commands.slice(1).map(f => parseFile(f, dest));
 
-    } else if (files[0][0] == 'c') {
-      let [_, target] = files[0].split(' ');
+    } else { //cd
+      let [_, target] = commands[0].split(' ');
 
       if (target == '..') {
         dest = history.pop();
