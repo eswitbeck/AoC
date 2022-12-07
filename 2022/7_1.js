@@ -20,7 +20,7 @@ class Dir {
       })
       .reduce((a,b) => a + b, 0);
   }
-  lsRecurse() {
+  lsRecurse() { // return flattened deep list of only directory sizes
     let wrapper = (file) => {
       if (typeof file != 'number') {
         return [file.sumContents()].concat(
