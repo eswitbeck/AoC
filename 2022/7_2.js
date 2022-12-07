@@ -2,6 +2,7 @@ class Dir {
   constructor() {
     this.storage = {};
   }
+  
   addFile ([size, name]) {
     if(size == 'dir') this.storage[name] = new Dir();
     else this.storage[name] = Number(size);
