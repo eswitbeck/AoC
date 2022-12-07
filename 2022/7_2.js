@@ -1,14 +1,8 @@
-const {readFileSync} = require('fs');
-
-const input = readFileSync('.\\7_input','utf-8');
-
-let commands = input.split('\$ ').slice(2);
-
 class Dir {
   constructor() {
     this.storage = {};
   }
-  addFile ([size,name]) {
+  addFile ([size, name]) {
     if(size == 'dir') this.storage[name] = new Dir();
     else this.storage[name] = Number(size);
   }
@@ -18,14 +12,16 @@ class Dir {
         if (typeof v == 'number') return v;
         else return v.sumContents();
       })
-      .reduce((a,b) => a + b,0);
+      .reduce((a,b) => a + b, 0);
   }
-  lsRecurse() {
-    let wrapper = (file) => {
-      if (typeof file != 'number') {
-        return [file.sumContents()].concat(
+  lsRecurse() { //return flattened tree
+    let wrapper = (file) => { 
+      if (typeof file == 'number') { 
+        return [file];
+      } else {
+        return [file].concat(
           Object.values(file.storage).map(wrapper).flat());
-      } else return [];
+      }
     }
     return wrapper(this);
   }
@@ -33,20 +29,18 @@ class Dir {
     let free = 70000000 - root.sumContents();
     let needed = 30000000 - free;
     return this.lsRecurse()
+      .filter(f => typeof f != 'number')
+      .map(f => f.sumContents())
       .filter(f => f >= needed)
       .reduce((a,b) => Math.min(a,b), Infinity)
   }
 }
 
-
-
-let root = new Dir();
-
-function populateDir (input) {
-  let dest = root;
+function populateDir (input, directory) {
+  let dest = directory;
   let history = [];
   for (command of input) {
-
+    
     let commands = command.split('\n');
     commands.pop();
 
@@ -72,5 +66,10 @@ function parseFile (file, destination) {
   destination.addFile(filePair);
 }
 
-populateDir(commands);
+const {readFileSync} = require('fs');
+const input = readFileSync('.\\7_input','utf-8');
+let commands = input.split('\$ ').slice(2);
+
+let root = new Dir();
+populateDir(commands, root);
 console.log(root.smallestDir());
