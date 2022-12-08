@@ -1,11 +1,34 @@
 class Tree {
-  constructor(height) {
+  constructor(height, i, j) {
     this.height = height;
-    this.counted = false;
+    this.i = i;
+    this.j = j
   }
 
-  count () {
-    this.counted = true;
+  isVisible () {
+      for (let y = this.i - 1; y > -1; y--) { //look up
+        let compare = forest[y][this.j];
+        if (compare.height >= this.height) {
+          for (let y = this.i + 1; y < forest.length; y++) { //look down
+            let compare = forest[y][this.j];
+            if(compare.height >= this.height) {
+              for (let x = this.j - 1; x > -1; x--) { //look left
+                let compare = forest[this.i][x];
+                if(compare.height >= this.height) {
+                  for (let x = this.j + 1; x < forest[0].length ; x++) { //look right
+                    let compare = forest[this.i][x];
+                    if(compare.height >= this.height) return false; //not visible in any direction
+                  }
+                  return true; //visible from the right
+                }
+              }
+              return true; //visible from the left
+            }
+          }
+          return true; //visible from the bottom
+        }
+      }
+      return true; //visible from the top
   }
 }
 
@@ -13,67 +36,20 @@ const {readFileSync} = require('fs');
 let input = readFileSync('.\\8_input','utf-8').trimEnd();
 
 let woods = input.split('\n');
-let forest = [], rowMax = [], colMax = [];
-let vis = 0;
+let forest = [];
 
  //fill forest 
 for (let i = 0; i < woods.length; i++) {
   let line = woods[i];
   forest[i] = [];
-  rowMax[i] = -1;
   for (let j = 0; j < line.length; j++) {
-    forest[i][j] = new Tree(Number(line[j]));
-    colMax[j] = -1;
+    forest[i][j] = new Tree(Number(line[j]), i, j);
   }
 }
 
-for (let i = 0; i < forest.length; i++) { // L and Top
-  let line = forest[i];
-  for (let j = 0; j < line.length; j++) {
-    if (line[j].height > rowMax[i]) {
-      rowMax[i] = line[j].height;
-      if (!line[j].counted) {
-        vis++;
-        line[j].count();
-      }
-    }
-    if (line[j].height > colMax[j]) {
-      colMax[j] = line[j].height;
-      if (!line[j].counted) {
-        vis++;
-        line[j].count();
-      }
-    }
-  }
-}
 
-//reset maxs
-for (let i = forest.length - 1; i > -1; i--) {
-  let line = woods[i];
-  rowMax[i] = -1;
-  for (let j = line.length - 1; j > -1; j--) {
-    colMax[j] = -1;
-  }
-}
-
-for (let i = forest.length - 1; i > -1; i--) { //R and Bottom
-  let line = forest[i];
-  for (let j = line.length - 1; j > - 1; j--) {
-    if (line[j].height > rowMax[i]) {
-      rowMax[i] = line[j].height;
-      if (!line[j].counted) {
-        vis++;
-        line[j].count();
-      }
-    }
-    if (line[j].height > colMax[j]) {
-      colMax[j] = line[j].height;
-      if (!line[j].counted) {
-        vis++;
-        line[j].count();
-      }
-    }
-  }
-}
-
-console.log(vis);
+console.log(
+  forest.flat()
+  .filter(t => t.isVisible())
+  .length
+);
