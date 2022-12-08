@@ -59,6 +59,6 @@ for (let i = 0; i < woods.length; i++) {
 
 console.log(
   forest.flat()
-  .map(t => t.findScenicScore())
-  .reduce((a,b) => Math.max(a,b))
+    .map(t => t.findScenicScore())
+    .reduce((a,b) => Math.max(a,b))
 );
