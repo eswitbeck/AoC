@@ -48,7 +48,7 @@ for (let i = 0; i < forest.length; i++) { // L and Top
 }
 
 //reset maxs
-for (let i = forest.length - 1; i > -1; i--) { //R and Bottom
+for (let i = forest.length - 1; i > -1; i--) {
   let line = woods[i];
   rowMax[i] = -1;
   for (let j = line.length - 1; j > -1; j--) {
