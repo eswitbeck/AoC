@@ -5,7 +5,7 @@ class Tree {
     this.j = j
   }
   
-  scenicScore () {
+  findScenicScore () {
     let up = 0, down = 0, left = 0, right = 0;
     for (let y = this.i - 1; y > -1; y--) {
       let compare = forest[y][this.j];
@@ -57,13 +57,8 @@ for (let i = 0; i < woods.length; i++) {
   }
 }
 
-let flatList = [];
-
-for (let i = 0; i < forest.length; i++) {
-  let line = forest[i];
-  for (let j = 0; j < line.length; j++) {
-    flatList.push(forest[i][j].scenicScore());
-  }
-}
-
-console.log(flatList.reduce((a,b) => Math.max(a,b)));
+console.log(
+  forest.flat()
+  .map(t => t.findScenicScore())
+  .reduce((a,b) => Math.max(a,b))
+);
