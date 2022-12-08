@@ -50,6 +50,6 @@ for (let i = 0; i < woods.length; i++) {
 
 console.log(
   forest.flat()
-  .filter(t => t.isVisible())
-  .length
+    .filter(t => t.isVisible())
+    .length
 );
