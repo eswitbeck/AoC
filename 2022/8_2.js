@@ -8,36 +8,24 @@ class Tree {
   findScenicScore () {
     let up = 0, down = 0, left = 0, right = 0;
     for (let y = this.i - 1; y > -1; y--) {
-      let compare = forest[y][this.j];
-      if (compare.height >= this.height) {
-        up++
-        break;
-      }
       up++
+      let compare = forest[y][this.j];
+      if (compare.height >= this.height) break;
     }
     for (let y = this.i + 1; y < forest.length; y++) {
-      let compare = forest[y][this.j];
-      if(compare.height >= this.height) {
-        down++;
-        break;
-      }
       down++
+      let compare = forest[y][this.j];
+      if (compare.height >= this.height) break;
     }
     for (let x = this.j - 1; x > -1; x--) {
-      let compare = forest[this.i][x];
-      if(compare.height >= this.height) {
-        left++;
-        break;
-      }
       left++;
+      let compare = forest[this.i][x];
+      if (compare.height >= this.height) break;
     }
     for (let x = this.j + 1; x < forest[0].length ; x++) { 
-      let compare = forest[this.i][x];
-      if(compare.height >= this.height) {
-        right++;
-        break;
-      }
       right++;
+      let compare = forest[this.i][x];
+      if (compare.height >= this.height) break;
     }
     return up * down * left * right;
   }
