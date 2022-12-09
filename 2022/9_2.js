@@ -26,7 +26,7 @@ class RopeState {
         }
       }
     function updateKnot (head, tail, main, num) {
-      if (
+      if ( //diagonal
         Math.abs(head['x'] - tail['x']) >= 2 &&
             head['y'] != tail['y'] ||
         Math.abs(head['y'] - tail['y']) >= 2 &&
@@ -34,7 +34,7 @@ class RopeState {
       ) {
         head['x'] > tail['x'] ? tail['x']++ : tail['x']--;
         head['y'] > tail['y'] ? tail['y']++ : tail['y']--;
-      } else { 
+      } else { //linear
         switch (true) {
           case head['x'] - tail['x'] >= 2:
             tail['x']++;
