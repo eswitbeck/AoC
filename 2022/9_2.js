@@ -12,45 +12,45 @@ class RopeState {
     function updateHead (head) {
       switch (dir) {
         case 'U':
-          head['y']++;
+          head.y++;
           break;
         case 'D': 
-          head['y']--;
+          head.y--;
           break;
         case 'L':
-          head['x']--;
+          head.x--;
           break;
         case 'R':
-          head['x']++;
+          head.x++;
           break;
         }
       }
     function updateKnot (head, tail, knotCount, num, visited) {
       if ( //diagonal
-        Math.abs(head['x'] - tail['x']) >= 2 &&
-            head['y'] != tail['y'] ||
-        Math.abs(head['y'] - tail['y']) >= 2 &&
-            head['x'] != tail['x']
+        Math.abs(head.x - tail.x) >= 2 &&
+            head.y != tail.y ||
+        Math.abs(head.y - tail.y) >= 2 &&
+            head.x != tail.x
       ) {
-        head['x'] > tail['x'] ? tail['x']++ : tail['x']--;
-        head['y'] > tail['y'] ? tail['y']++ : tail['y']--;
+        head.x > tail.x ? tail.x++ : tail.x--;
+        head.y > tail.y ? tail.y++ : tail.y--;
       } else { //linear
         switch (true) {
-          case head['x'] - tail['x'] >= 2:
-            tail['x']++;
+          case head.x - tail.x >= 2:
+            tail.x++;
             break;
-          case head['x'] - tail['x'] <= -2:
-            tail['x']--;
+          case head.x - tail.x <= -2:
+            tail.x--;
             break;
-          case head['y'] - tail['y'] >= 2:
-            tail['y']++;
+          case head.y - tail.y >= 2:
+            tail.y++;
             break;
-          case head['y'] - tail['y'] <= -2:
-            tail['y']--;
+          case head.y - tail.y <= -2:
+            tail.y--;
             break;
         }
       }
-      let locationString = tail['x'].toString() + "." + tail['y'].toString();
+      let locationString = `${tail.x}, ${tail.y}`;
       if(num == knotCount - 1) {
         if (!visited[locationString]) visited[locationString] = 1;
       } 
