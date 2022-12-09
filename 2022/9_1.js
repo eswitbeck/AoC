@@ -7,6 +7,7 @@ class RopeState {
 
   move (dir, count) {
     for (let i = 0; i < count; i++) {
+      //update head
       switch (dir) {
         case 'U':
           this.head['y']++;
@@ -21,7 +22,8 @@ class RopeState {
           this.head['x']++;
           break;
       }
-      if (
+      //update tail
+      if ( //diagonal
         Math.abs(this.head['x'] - this.tail['x']) >= 2 &&
             this.head['y'] != this.tail['y'] ||
         Math.abs(this.head['y'] - this.tail['y']) >= 2 &&
@@ -29,7 +31,7 @@ class RopeState {
       ) {
         this.head['x'] > this.tail['x'] ? this.tail['x']++ : this.tail['x']--;
         this.head['y'] > this.tail['y'] ? this.tail['y']++ : this.tail['y']--;
-      } else {
+      } else { //linear
         switch (true) {
           case this.head['x'] - this.tail['x'] >= 2:
             this.tail['x']++;
