@@ -7,47 +7,47 @@ class RopeState {
 
   move (dir, count) {
     for (let i = 0; i < count; i++) {
-      //update head
+      // update head
       switch (dir) {
         case 'U':
-          this.head['y']++;
+          this.head.y++;
           break;
         case 'D': 
-          this.head['y']--;
+          this.head.y--;
           break;
         case 'L':
-          this.head['x']--;
+          this.head.x--;
           break;
         case 'R':
-          this.head['x']++;
+          this.head.x++;
           break;
       }
-      //update tail
+      // update tail
       if ( //diagonal
-        Math.abs(this.head['x'] - this.tail['x']) >= 2 &&
-            this.head['y'] != this.tail['y'] ||
-        Math.abs(this.head['y'] - this.tail['y']) >= 2 &&
-            this.head['x'] != this.tail['x']
+        Math.abs(this.head.x - this.tail.x) >= 2 &&
+            this.head.y != this.tail.y ||
+        Math.abs(this.head.y - this.tail.y) >= 2 &&
+            this.head.x != this.tail.x
       ) {
-        this.head['x'] > this.tail['x'] ? this.tail['x']++ : this.tail['x']--;
-        this.head['y'] > this.tail['y'] ? this.tail['y']++ : this.tail['y']--;
+        this.head.x > this.tail.x ? this.tail.x++ : this.tail.x--;
+        this.head.y > this.tail.y ? this.tail.y++ : this.tail.y--;
       } else { //linear
         switch (true) {
-          case this.head['x'] - this.tail['x'] >= 2:
-            this.tail['x']++;
+          case this.head.x - this.tail.x >= 2:
+            this.tail.x++;
             break;
-          case this.head['x'] - this.tail['x'] <= -2:
-            this.tail['x']--;
+          case this.head.x - this.tail.x <= -2:
+            this.tail.x--;
             break;
-          case this.head['y'] - this.tail['y'] >= 2:
-            this.tail['y']++;
+          case this.head.y - this.tail.y >= 2:
+            this.tail.y++;
             break;
-          case this.head['y'] - this.tail['y'] <= -2:
-            this.tail['y']--;
+          case this.head.y - this.tail.y <= -2:
+            this.tail.y--;
             break;
         }
       }
-      let locationString = this.tail['x'].toString() + "." + this.tail['y'].toString();
+      let locationString = `${this.tail.x}, ${this.tail.y}`;
       if (!this.visited[locationString]) this.visited[locationString] = 1;
     }
   }
