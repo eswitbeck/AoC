@@ -9,24 +9,24 @@ class RopeState {
   }
 
   move (dir, count) {
-    function updateHead (main) {
+    function updateHead (head) {
       switch (dir) {
         case 'U':
-          main.head['y']++;
+          head['y']++;
           break;
         case 'D': 
-          main.head['y']--;
+          head['y']--;
           break;
         case 'L':
-          main.head['x']--;
+          head['x']--;
           break;
         case 'R':
-          main.head['x']++;
+          head['x']++;
           break;
         }
       }
-    function updateKnot (head, tail, main, num) {
-      if ( //diagonal
+    function updateKnot (head, tail, knotCount, num, visited) {
+      if (
         Math.abs(head['x'] - tail['x']) >= 2 &&
             head['y'] != tail['y'] ||
         Math.abs(head['y'] - tail['y']) >= 2 &&
@@ -34,7 +34,7 @@ class RopeState {
       ) {
         head['x'] > tail['x'] ? tail['x']++ : tail['x']--;
         head['y'] > tail['y'] ? tail['y']++ : tail['y']--;
-      } else { //linear
+      } else { 
         switch (true) {
           case head['x'] - tail['x'] >= 2:
             tail['x']++;
@@ -51,18 +51,18 @@ class RopeState {
         }
       }
       let locationString = tail['x'].toString() + "." + tail['y'].toString();
-      if(num == main.tail.length - 1) {
-        if (!main.visited[locationString]) main.visited[locationString] = 1;
+      if(num == knotCount - 1) {
+        if (!visited[locationString]) visited[locationString] = 1;
       } 
     }
 
     for (let i = 0; i < count; i++) {
-      updateHead(this);
+      updateHead(this.head);
       for (const kn in this.tail){
         if (kn == 0) {
-          updateKnot(this.head, this.tail[kn], this, kn)
+          updateKnot(this.head, this.tail[kn], this.tail.length, kn, this.visited)
         } else {
-          updateKnot(this.tail[kn - 1], this.tail[kn], this, kn);
+          updateKnot(this.tail[kn - 1], this.tail[kn], this.tail.length, kn, this.visited);
         }
       }
     }
