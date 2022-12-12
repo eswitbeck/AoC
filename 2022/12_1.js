@@ -13,7 +13,7 @@ class Node {
   checkNeighbors () {
     const connected = (node, neighbor) => neighbor.val - node.val <= 1;
     let nCoords = [[this.i - 1, this.j], [this.i, this.j - 1],
-                   [this.i, this.j +1],  [this.i + 1, this.j]]
+                   [this.i, this.j + 1],  [this.i + 1, this.j]]
     this.neighbors = nCoords.filter(([x, y]) => graph[x] && graph[x][y] &&
                                     connected(this, graph[x][y]))
                         .map(([x,y]) => graph[x][y]);
@@ -51,16 +51,16 @@ function traverse (node) {
   for (const neigh of unvis) {
     neigh.distance = Math.min(neigh.distance, node.distance + 1)
   }
-  unvisited.splice(unvisited.indexOf(node),1)
-    if (!unvisited.includes(end) ||
-        unvisited
-          .map(n => n.distance)
-          .reduce((a,b) => Math.min(a,b)) == Infinity) {
-      return end.distance
-    } else {
-      let least = unvisited.sort((a,b) => a.distance - b.distance)[0];
-      return traverse(least);
-    }
+  unvisited.splice(unvisited.indexOf(node), 1)
+  if (!unvisited.includes(end) ||
+      unvisited
+        .map(n => n.distance)
+        .reduce((a,b) => Math.min(a,b)) == Infinity) {
+    return end.distance
+  } else {
+    let least = unvisited.sort((a,b) => a.distance - b.distance)[0];
+    return traverse(least);
+  }
 }
 
 console.log(traverse(start));
