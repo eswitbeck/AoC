@@ -10,22 +10,19 @@ for(let i = 0; i < input.length; i++) {
 
 function compare(a, b) {
   const catchSame = (check, alt) => (check != 'same') ? check : alt;
-  function compareHelper (a, b) {
-    if (a.length === 0 && b.length === 0) return 'same';
-    if (a.length === 0) return true;
-    if (b.length === 0) return false;
-    if (typeof a === 'number') {
-      if (typeof b === 'number') return (a == b) ? 'same': a < b;
-      else return compareHelper ([a], b); //a num, b arr
-    }
-    if (typeof b === 'number') { //a arr, b num
-      return compareHelper (a, [b]);
-    } else { //a arr, b arr
-      return catchSame(compareHelper (a[0], b[0]),
-                       compareHelper(a.slice(1), b.slice(1))); 
-    }
+  if (a.length === 0 && b.length === 0) return 'same';
+  if (a.length === 0) return true;
+  if (b.length === 0) return false;
+  if (typeof a === 'number') {
+    if (typeof b === 'number') return (a == b) ? 'same': a < b;
+    else return compare ([a], b); //a num, b arr
   }
-  return compareHelper(a, b);
+  if (typeof b === 'number') { //a arr, b num
+    return compare (a, [b]);
+  } else { //a arr, b arr
+    return catchSame(compare (a[0], b[0]),
+                     compare(a.slice(1), b.slice(1))); 
+  }
 }
 
 console.log(total);
