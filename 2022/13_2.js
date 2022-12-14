@@ -11,8 +11,18 @@ let index2, index6;
 
 for (let i = 0; i < input.length; i++) {
   let j = i + 1;
-  if(compare(input[i],[[2]]) == 'same') index2 = j;
-  if(compare(input[i],[[6]]) == 'same') index6 = j;
+  if (compare(input[i],[[2]]) == 'same') {
+    index2 = j;
+    break;
+  }
+}
+
+for (let i = index2 - 1; i < input.length; i++) {
+  let j = i + 1;
+  if (compare(input[i],[[6]]) == 'same') {
+    index6 = j;
+    break;
+  }
 }
 
 function compare(a, b) {
