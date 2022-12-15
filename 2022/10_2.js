@@ -22,7 +22,7 @@ for (const line of input) {
 }
 
 function signalCheck () {
-  Math.abs((t - 1) % 40 - X) <= 1 ? signal += '#' : signal += '.';
+  signal += Math.abs((t - 1) % 40 - X) <= 1 ? '#' : '.';
   if ((t - 40) % 40 === 0) {
     console.log(signal);
     signal = '';

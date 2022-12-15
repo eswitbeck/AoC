@@ -19,13 +19,10 @@ for (const line of input) {
     t++;
     signalCheck()
   }
-
 }
 
 console.log(signal);
 
 function signalCheck () {
-  if ((t - 20) % 40 === 0) {
-    signal += (t * X)
-  }
+  if ((t - 20) % 40 === 0) signal += (t * X);
 }
