@@ -1,8 +1,14 @@
-Example of a failing case:
+Example of a failing case with 9 minutes:
 Valve AA has flow rate=0; tunnels lead to valves BB, DD
 Valve BB has flow rate=1; tunnels lead to valves AA, CC
 Valve CC has flow rate=10; tunnels lead to valves BB, DD
 Valve DD has flow rate=2; tunnels lead to valves AA, CC
+
+      CC (10)
+    /    \
+  BB (1)  DD (2)
+    \    /
+      AA
 
 At each node, check each child. If the path improves the pre-existing state, update the child's aggregate flow, minutes, and stored path.
 
@@ -124,3 +130,7 @@ Path: [
   'CC-open', 'BB',
   'BB-open'
 ]
+Proper path is: 
+  'AA', 'DD', 'CC', 'CC-open', 'DD', 'DD-open', 'AA', 'BB', 'BB-open'
+  for a total of 69.
+
