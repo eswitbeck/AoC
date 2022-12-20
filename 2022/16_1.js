@@ -24,7 +24,7 @@ class Node {
 }
 
 const {readFileSync} = require('fs');
-const input = readFileSync('.\\16_input_fail', 'utf-8').trimEnd();
+const input = readFileSync('.\\16_input', 'utf-8').trimEnd();
 
 let regex = /Valve (.{2}) has flow rate=(\d{1,2}); tunnels* leads* to valves* (.+)/g; 
 const graph = {};
@@ -38,7 +38,7 @@ for (const line of input.split('\n')) {
   graph[name] = new Node(name, 0, connections);
 
   //opening a valve is also a node
-  if (flow !== 0) {
+  if (flow !== '0') {
     let open = name + '-open';
     //the only access point is the closed-version node
     graph[name].connections[open] = true;
@@ -60,13 +60,13 @@ function traverse (node) {
     return Object.keys(visited).map(n => graph[n].aggregateFlow)
             .reduce((a,b) => Math.max(a,b));
   }
-  if (node.minutes < 9) {
+  if (node.minutes < 30) {
     const children = node.getChildren();
     if (children.length !== 0) for (const child of children) {
       //child is not an '-open' node already visited in this path
-      if (!(child.opens() && node.path.includes(node.name))) {
+      if (!(child.opens() && node.path.includes(child.name))) {
         let possibleVal = node.aggregateFlow +
-          (9 - (node.minutes + 1)) * child.flow;
+          (30 - (node.minutes + 1)) * child.flow;
         if (possibleVal > child.aggregateFlow) {
           child.aggregateFlow = possibleVal;
           child.minutes = node.minutes + 1;
