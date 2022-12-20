@@ -4,7 +4,14 @@ Valve BB has flow rate=1; tunnels lead to valves AA, CC
 Valve CC has flow rate=10; tunnels lead to valves BB, DD
 Valve DD has flow rate=2; tunnels lead to valves BB, CC
 
-At each node, check each child. If the path improves the pre-existing state, update the child's aggregate flow, minutes, and stored path.
+At each node, check each child. If the path improves the pre-existing state,
+update the child's aggregate flow, minutes, and stored path, then add the child
+to the unvisited set.
+
+Then, remove node from the unvisited set.
+
+Set the next current node to be the node in the unvisited set with 1) the
+lowest minutes and 2) the lowest aggregate flow.
 
 Initializing all nodes to Infinity minutes and -Infinity aggregate flow.
 
