@@ -4,7 +4,14 @@ Valve BB has flow rate=1; tunnels lead to valves AA, CC
 Valve CC has flow rate=10; tunnels lead to valves BB, DD
 Valve DD has flow rate=2; tunnels lead to valves AA, CC
 
-At each node, check each child. If the path improves the pre-existing state, update the child's aggregate flow, minutes, and stored path.
+At each node, check each child. If the path improves the pre-existing state,
+update the child's aggregate flow, minutes, and stored path, then add the child
+to the unvisited set.
+
+Then, remove node from the unvisited set.
+
+Set the next current node to be the node in the unvisited set with 1) the
+lowest minutes and 2) the lowest aggregate flow.
 
 Initializing all nodes to Infinity minutes and -Infinity aggregate flow.
 
@@ -20,7 +27,7 @@ BB's path improves CC's aggregate flow of -Infinity; updating CC to aggregate fl
 BB checks BB-open
 BB's path improves BB-open's aggregate flow of -Infinity; updating BB-open to aggregate flow of 7 at 2 minutes.
 Current node is: DD
-DD checks AA
+DD checks BB
 DD checks CC
 DD checks DD-open
 DD's path improves DD-open's aggregate flow of -Infinity; updating DD-open to aggregate flow of 14 at 2 minutes.
@@ -35,52 +42,63 @@ BB-open's path improves AA's aggregate flow of 0; updating AA to aggregate flow 
 BB-open checks CC
 BB-open's path improves CC's aggregate flow of 0; updating CC to aggregate flow of 7 at 3 minutes.
 Current node is: DD-open
-DD-open checks AA
-DD-open's path improves AA's aggregate flow of 7; updating AA to aggregate flow of 14 at 3 minutes.
+DD-open checks BB
+DD-open's path improves BB's aggregate flow of 0; updating BB to aggregate flow of 14 at 3 minutes.
 DD-open checks CC
 DD-open's path improves CC's aggregate flow of 7; updating CC to aggregate flow of 14 at 3 minutes.
 Current node is: AA
 AA checks BB
-AA's path improves BB's aggregate flow of 0; updating BB to aggregate flow of 14 at 4 minutes.
 AA checks DD
-AA's path improves DD's aggregate flow of 0; updating DD to aggregate flow of 14 at 4 minutes.
+AA's path improves DD's aggregate flow of 0; updating DD to aggregate flow of 7 at 4 minutes.
+Current node is: BB
+BB checks AA
+BB's path improves AA's aggregate flow of 7; updating AA to aggregate flow of 14 at 4 minutes.
+BB checks CC
+BB checks BB-open
+BB's path improves BB-open's aggregate flow of 7; updating BB-open to aggregate flow of 19 at 4 minutes.
 Current node is: CC
 CC checks BB
 CC checks DD
+CC's path improves DD's aggregate flow of 7; updating DD to aggregate flow of 14 at 4 minutes.
 CC checks CC-open
 CC's path improves CC-open's aggregate flow of 60; updating CC-open to aggregate flow of 64 at 4 minutes.
 
 |||| algorithm 'overwrites' the winning path ^ ||||
 
-Current node is: BB
-BB checks AA
-BB checks CC
-BB checks BB-open
-BB's path improves BB-open's aggregate flow of 7; updating BB-open to aggregate flow of 18 at 5 minutes.
+Current node is: AA
+AA checks BB
+AA checks DD
 Current node is: DD
-DD checks AA
+DD checks BB
 DD checks CC
 DD checks DD-open
 This path has already opened DD-open; skipping.
+Current node is: BB-open
+BB-open checks AA
+BB-open's path improves AA's aggregate flow of 14; updating AA to aggregate flow of 19 at 5 minutes.
+BB-open checks CC
+BB-open's path improves CC's aggregate flow of 14; updating CC to aggregate flow of 19 at 5 minutes.
 Current node is: CC-open
 CC-open checks BB
 CC-open's path improves BB's aggregate flow of 14; updating BB to aggregate flow of 64 at 5 minutes.
 CC-open checks DD
 CC-open's path improves DD's aggregate flow of 14; updating DD to aggregate flow of 64 at 5 minutes.
-Current node is: BB-open
-BB-open checks AA
-BB-open's path improves AA's aggregate flow of 14; updating AA to aggregate flow of 18 at 6 minutes.
-BB-open checks CC
-BB-open's path improves CC's aggregate flow of 14; updating CC to aggregate flow of 18 at 6 minutes.
+Current node is: AA
+AA checks BB
+AA checks DD
+Current node is: CC
+CC checks BB
+CC checks DD
+CC checks CC-open
 Current node is: BB
 BB checks AA
-BB's path improves AA's aggregate flow of 18; updating AA to aggregate flow of 64 at 6 minutes.
+BB's path improves AA's aggregate flow of 19; updating AA to aggregate flow of 64 at 6 minutes.
 BB checks CC
-BB's path improves CC's aggregate flow of 18; updating CC to aggregate flow of 64 at 6 minutes.
+BB's path improves CC's aggregate flow of 19; updating CC to aggregate flow of 64 at 6 minutes.
 BB checks BB-open
-BB's path improves BB-open's aggregate flow of 18; updating BB-open to aggregate flow of 67 at 6 minutes.
+BB's path improves BB-open's aggregate flow of 19; updating BB-open to aggregate flow of 67 at 6 minutes.
 Current node is: DD
-DD checks AA
+DD checks BB
 DD checks CC
 DD checks DD-open
 This path has already opened DD-open; skipping.
@@ -113,7 +131,7 @@ BB checks CC
 BB checks BB-open
 This path has already opened BB-open; skipping.
 Current node is: DD
-DD checks AA
+DD checks BB
 DD checks CC
 DD checks DD-open
 This path has already opened DD-open; skipping.
@@ -124,3 +142,6 @@ Path: [
   'CC-open', 'BB',
   'BB-open'
 ]
+Proper path is: 
+  'AA', 'DD', 'CC', 'CC-open', 'DD', 'DD-open', 'AA', 'BB', 'BB-open'
+  for a total of 69.
