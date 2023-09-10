@@ -1,1 +1,8 @@
-*/input*
+*/*/_build/
+*/*/test/
+*/*/lib
+*input*
+*.swp
+*dune*
+*opam*
+
