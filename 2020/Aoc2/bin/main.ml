@@ -24,7 +24,6 @@ let adapt line =
     | _ -> (-1, -1, b, c) in
   split_range (split_counts (split_line line))
 
-
 let input = List.map adapt list
 
 let is_valid_list (low, high, letter, string) =
@@ -40,10 +39,10 @@ let solution_1 =
   List.fold_left fold_add_if_true 0 bool_list
 
 let is_valid_list_2 (first, second, letter, string) =
-  (String.get string (first - 1) = letter &&
-  String.get string (second - 1) <> letter) ||
-  (String.get string (second - 1) = letter &&
-  String.get string (first - 1) <> letter)
+  (string.[first - 1] = letter &&
+  string.[second - 1] <> letter) ||
+  (string.[second - 1] = letter &&
+  string.[first - 1] <> letter)
 
 let bool_list_2 = List.map is_valid_list_2 input
 
