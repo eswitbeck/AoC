@@ -9,7 +9,7 @@ let read_lines file =
 
 let input = read_lines filename
 
-let solution slope =
+let count_collisions slope =
   let intersects (x,y) =
     let y_filtered = List.filteri (fun i _ -> i mod y = 0) input in
     List.mapi (fun i row ->
@@ -23,12 +23,12 @@ let solution slope =
     | _ -> count
   ) 0 (intersects slope)
 
-let solution_1 = solution (3, 1)
+let solution_1 = count_collisions (3, 1)
 
 let slopes = [(1, 1); (3, 1); (5, 1); (7, 1); (1, 2)]
 
 let solution_2 =
-  let totals = List.map solution slopes in
+  let totals = List.map count_collisions slopes in
   List.fold_left (fun accum sum -> accum * sum) 1 totals
 
 let () = 
