@@ -75,15 +75,12 @@ let to_field_passport bundle =
   match k with
     | "byr" -> let year = int_of_string v in
       let result = year >= 1920 && year <= 2002 in
-      Printf.printf "byr: %d;; %b\n" year result; 
       passport.byr <- result
     | "iyr" -> let year = int_of_string v in
       let result = year >= 2010 && year <= 2020 in
-      Printf.printf "iyr: %d;; %b\n" year result; 
       passport.iyr <- result
     | "eyr" -> let year = int_of_string v in
     let result = year >= 2020 && year <= 2030 in
-      Printf.printf "eyr: %d;; %b\n" year result; 
       passport.eyr <- result
     | "hgt" -> let reg = Pcre.regexp "(\\d+)(cm|in)" in
       if Pcre.pmatch ~rex:reg v then
@@ -95,24 +92,17 @@ let to_field_passport bundle =
         | "in" -> height >= 59 && height <= 76;
         | "cm" -> height >= 150 && height <= 193
         | _ -> raise Not_found in
-      Printf.printf "hgt: %d %s;; %b\n" height u (in_range height u);
       passport.hgt <- in_range height u
      else passport.hgt <- false
     | "hcl" -> let result = Pcre.pmatch ~rex:(Pcre.regexp "#([a-f0-9]){6}") v in
-      Printf.printf "hcl: %s;; %b\n" v result; 
       passport.hcl <- result && String.length v = 7
     | "ecl" -> passport.ecl <- let options = "(amb|blu|brn|brn|gry|grn|hzl|oth)" in
-      Printf.printf "ecl: %s;; %b\n" v (Pcre.pmatch ~rex:(Pcre.regexp options)
-         v); 
       Pcre.pmatch ~rex:(Pcre.regexp options) v
     | "pid" -> let result = Pcre.pmatch ~rex:(Pcre.regexp "\\d{9}") v in
-      Printf.printf "pid: %s; %b\n" v result; 
       passport.pid <- result && String.length v = 9
     | "cid" -> passport.cid <- true 
     | _ -> raise Not_found in
   List.iter update bundle;
-  Printf.printf "%b\n" (is_valid_passport passport);
-  Printf.printf "\n";
   passport
 
 let bool_passports = read_lines filename
