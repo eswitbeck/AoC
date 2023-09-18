@@ -17,7 +17,7 @@ let extract_key_value_pairs bundles =
     |> List.map (Pcre.extract ~rex:key_value_regex) in
   List.map (fun p -> (p.(1), p.(2))) arr
 
-type passport = {
+type bool_passport = {
   mutable byr: bool;
   mutable iyr: bool;
   mutable eyr: bool;
@@ -27,6 +27,12 @@ type passport = {
   mutable pid: bool;
   mutable cid: bool;
 }
+
+let is_valid_passport p =
+  p.byr && p.iyr &&
+  p.eyr && p.hgt &&
+  p.hcl && p.ecl &&
+  p.pid
 
 let to_bool_passport bundle =
   let passport =  {
@@ -53,17 +59,77 @@ let to_bool_passport bundle =
   List.iter update bundle;
   passport
 
-let is_valid_passport p =
-  p.byr && p.iyr &&
-  p.eyr && p.hgt &&
-  p.hcl && p.ecl &&
-  p.pid
+let to_field_passport bundle =
+  let passport =  {
+    byr = false;
+    iyr = false;
+    eyr = false;
+    hgt = false;
+    hcl = false;
+    ecl = false;
+    pid = false;
+    cid = false;
+  } in
+  let update (k, v) =
+  let open Re in
+  match k with
+    | "byr" -> let year = int_of_string v in
+      let result = year >= 1920 && year <= 2002 in
+      Printf.printf "byr: %d;; %b\n" year result; 
+      passport.byr <- result
+    | "iyr" -> let year = int_of_string v in
+      let result = year >= 2010 && year <= 2020 in
+      Printf.printf "iyr: %d;; %b\n" year result; 
+      passport.iyr <- result
+    | "eyr" -> let year = int_of_string v in
+    let result = year >= 2020 && year <= 2030 in
+      Printf.printf "eyr: %d;; %b\n" year result; 
+      passport.eyr <- result
+    | "hgt" -> let reg = Pcre.regexp "(\\d+)(cm|in)" in
+      if Pcre.pmatch ~rex:reg v then
+      let h = Pcre.extract ~rex:reg v in
+      let height = int_of_string h.(1) in
+      let u = h.(2) in
+      let in_range height un =
+      match un with 
+        | "in" -> height >= 59 && height <= 76;
+        | "cm" -> height >= 150 && height <= 193
+        | _ -> raise Not_found in
+      Printf.printf "hgt: %d %s;; %b\n" height u (in_range height u);
+      passport.hgt <- in_range height u
+     else passport.hgt <- false
+    | "hcl" -> let result = Pcre.pmatch ~rex:(Pcre.regexp "#([a-f0-9]){6}") v in
+      Printf.printf "hcl: %s;; %b\n" v result; 
+      passport.hcl <- result && String.length v = 7
+    | "ecl" -> passport.ecl <- let options = "(amb|blu|brn|brn|gry|grn|hzl|oth)" in
+      Printf.printf "ecl: %s;; %b\n" v (Pcre.pmatch ~rex:(Pcre.regexp options)
+         v); 
+      Pcre.pmatch ~rex:(Pcre.regexp options) v
+    | "pid" -> let result = Pcre.pmatch ~rex:(Pcre.regexp "\\d{9}") v in
+      Printf.printf "pid: %s; %b\n" v result; 
+      passport.pid <- result && String.length v = 9
+    | "cid" -> passport.cid <- true 
+    | _ -> raise Not_found in
+  List.iter update bundle;
+  Printf.printf "%b\n" (is_valid_passport passport);
+  Printf.printf "\n";
+  passport
 
-let passports = read_lines filename
+let bool_passports = read_lines filename
   |> List.map extract_key_value_pairs
   |> List.map to_bool_passport
 
+let field_passports = read_lines filename
+  |> List.map extract_key_value_pairs
+  |> List.map to_field_passport
+
 let () = 
-  List.filter is_valid_passport passports
+  List.filter is_valid_passport bool_passports
     |> List.length
-    |> Printf.printf "Number of valid passports is %d\n"
+    |> Printf.printf "1) Number of valid passports is: %d.\n"
+
+let () = 
+  List.filter is_valid_passport field_passports
+    |> List.length
+    |> Printf.printf "2) Number of valid passports is: %d.\n"
+
