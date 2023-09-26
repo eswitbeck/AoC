@@ -7,7 +7,7 @@ let groups =
   let open Re.Pcre in
   let contents = String.trim (read_file filename) in
   split ~rex:(regexp "\n\n") contents
-  |> List.map (fun g -> split ~rex:(regexp "\n") g)
+  |> List.map (split ~rex:(regexp "\n"))
 
 let concatted_groups = groups
   |> List.map (List.fold_left ( ^ ) "")
@@ -25,7 +25,7 @@ let count_unique_answers c_group =
 let () =
   concatted_groups
   |> List.map count_unique_answers
-  |> List.fold_left (fun a b -> a + b) 0
+  |> List.fold_left ( + ) 0
   |> Printf.printf "Total answers part 1: %d.\n"
 
 module String_set = Set.Make(String)
@@ -37,7 +37,7 @@ let set_of_answers answers_string =
     match string_array with
     | [] -> set
     | hd::tl -> let updated_set = String_set.add hd set in
-      helper updated_set tl in 
+                helper updated_set tl in 
   let answers_array = explode_string answers_string in
   helper String_set.empty answers_array
 
