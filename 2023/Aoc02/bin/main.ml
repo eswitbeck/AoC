@@ -21,13 +21,30 @@ let parse_line l =
     int * (int * string) list list
   *)
 
+let is_valid_game (_ , body) = (* game of rounds of pulls *)
+  let is_valid_pull (count, color) =
+    match color with
+    | "blue" -> count <= 14
+    | "green" -> count <= 13
+    | "red" -> count <= 12
+    | _ -> raise Not_found in
+  let is_valid_round = 
+    List.fold_left (fun acc pull -> acc && is_valid_pull pull) true in
+  List.map is_valid_round body
+  |> List.fold_left ( && ) true
+
 let () = list
   |> List.map parse_line
+  |> List.filter is_valid_game
+  |> List.map (fun (number, _) -> number)
+  |> List.fold_left ( + ) 0
+  (*
   |> List.fold_left
       (fun acc (game_number, body) -> 
         Printf.printf "%d: \n" game_number;
         List.iter (List.iter (fun (n, g_t) -> Printf.printf "%s %d\n" g_t n)) body;
         acc) 
       0
-  |> (Printf.printf "%d")
+  *)
+  |> (Printf.printf "Solution 1: %d\n")
       
