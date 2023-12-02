@@ -38,13 +38,31 @@ let () = list
   |> List.filter is_valid_game
   |> List.map (fun (number, _) -> number)
   |> List.fold_left ( + ) 0
-  (*
-  |> List.fold_left
-      (fun acc (game_number, body) -> 
-        Printf.printf "%d: \n" game_number;
-        List.iter (List.iter (fun (n, g_t) -> Printf.printf "%s %d\n" g_t n)) body;
-        acc) 
-      0
-  *)
-  |> (Printf.printf "Solution 1: %d\n")
+  |> Printf.printf "Solution 1: %d\n"
       
+let max_across_pulls (blue, green, red) (count, color) =
+  match color with
+  | "blue" -> if count > blue then (count, green, red) else (blue, green, red)
+  | "green" -> if count > green then (blue, count, red) else (blue, green, red)
+  | "red" -> if count > red then (blue, green, count) else (blue, green, red)
+  | _ -> raise Not_found
+
+(* (int * string) list -> (int * int * int) *)
+let get_round_count = List.fold_left max_across_pulls (0, 0, 0)
+
+let max_across_rounds (b1, g1, r1) (b2, g2, r2) =
+  let b = if b2 > b1 then b2 else b1 in
+  let g = if g2 > g1 then g2 else g1 in
+  let r = if r2 > r1 then r2 else r1 in
+  (b, g, r)
+
+let get_counts (_, body) =
+  List.map get_round_count body
+  |> List.fold_left max_across_rounds (0, 0, 0)
+
+let () = list
+  |> List.map parse_line
+  |> List.map get_counts
+  |> List.map (fun (b, g, r) -> b * g * r)
+  |> List.fold_left ( + ) 0
+  |> Printf.printf "Solution 2: %d\n"
