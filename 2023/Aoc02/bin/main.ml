@@ -16,45 +16,37 @@ let parse_line l =
   let extract_game_data game = 
     let results = extract ~rex:(regexp "(\\d+) (blue|red|green)") game in
     (int_of_string results.(1), results.(2)) in
-  (int_of_string set.(1), List.map (split ~rex:(regexp ", ")) split_body |> List.map (List.map extract_game_data))
-  (*
-    int * (int * string) list list
-  *)
+  (int_of_string set.(1), List.map (split ~rex:(regexp ", ")) split_body |> List.map @@ List.map extract_game_data)
 
-let is_valid_game (_ , body) = (* game of rounds of pulls *)
+let is_valid_game (_ , body) = 
   let is_valid_pull (count, color) =
     match color with
     | "blue" -> count <= 14
     | "green" -> count <= 13
     | "red" -> count <= 12
     | _ -> raise Not_found in
-  let is_valid_round = 
-    List.fold_left (fun acc pull -> acc && is_valid_pull pull) true in
+  let is_valid_round = List.for_all is_valid_pull in
   List.map is_valid_round body
   |> List.fold_left ( && ) true
 
 let () = list
   |> List.map parse_line
   |> List.filter is_valid_game
-  |> List.map (fun (number, _) -> number)
+  |> List.map fst
   |> List.fold_left ( + ) 0
   |> Printf.printf "Solution 1: %d\n"
       
 let max_across_pulls (blue, green, red) (count, color) =
   match color with
-  | "blue" -> if count > blue then (count, green, red) else (blue, green, red)
-  | "green" -> if count > green then (blue, count, red) else (blue, green, red)
-  | "red" -> if count > red then (blue, green, count) else (blue, green, red)
+  | "blue" -> (Int.max blue count, green, red)
+  | "green" -> (blue, Int.max green count, red)
+  | "red" -> (blue, green, Int.max red count)
   | _ -> raise Not_found
 
-(* (int * string) list -> (int * int * int) *)
 let get_round_count = List.fold_left max_across_pulls (0, 0, 0)
 
 let max_across_rounds (b1, g1, r1) (b2, g2, r2) =
-  let b = if b2 > b1 then b2 else b1 in
-  let g = if g2 > g1 then g2 else g1 in
-  let r = if r2 > r1 then r2 else r1 in
-  (b, g, r)
+  (Int.max b1 b2, Int.max g1 g2, Int.max r1 r2)
 
 let get_counts (_, body) =
   List.map get_round_count body
