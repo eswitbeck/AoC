@@ -22,7 +22,9 @@ let touches_symbol i j arr =
       let y2 = i + y1 in
       (y2 >= 0 && y2 < Array.length arr) &&
       (x2 >= 0 && x2 < Array.length arr.(0)) &&
+      (
       Re.Pcre.pmatch ~rex:(Re.Pcre.regexp "[^\\d\\.]") (Char.escaped arr.(y2).(x2)))
+      )
      |> List.exists (fun a -> a)
 
 let is_digit arr i j = Re.Pcre.pmatch ~rex:(Re.Pcre.regexp "\\d") (Char.escaped arr.(i).(j))
@@ -46,6 +48,7 @@ let convert_line_to_numbers full_arr i line =
         | None -> helper numbers_list "" false (j + 1) in
   helper [] "" false 0
 
+(
 let () = 
   matrix
     |> (fun a -> Array.mapi (convert_line_to_numbers a) a)
@@ -53,26 +56,3 @@ let () =
     |> List.flatten
     |> List.fold_left ( + ) 0
     |> Printf.printf "%d\n"
-
-
-(* two pass solution for part 2:
-  pre-process into strings, where every digit is replaced by the whole number
-    ie [
-        1, 2, 3, ., .
-        *, ., ., . 1
-       ] becomes
-       [
-        123, 123, 123, ., .
-        *,     .,   ., ., 1
-       ]
-  then do a seek for symbols, retrieving numbers
-
-  get preprocessed version
-  get list = map aross outer array with
-    map across inner array
-      if symbol, check all coords
-        if 2 matches, add to list
-        else continue
-  |> flatten
-  |> reduce
-  *)
