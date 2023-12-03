@@ -1,4 +1,3 @@
-(*
 let filename = "input"
 
 let read_file file =
@@ -8,20 +7,9 @@ let read_lines file =
   let contents = String.trim (read_file file) in
   String.split_on_char '\n' contents
   |> Array.of_list
-  |> Array.map (l -> Array.init (Array.length l) (String.get l))
+  |> Array.map (fun l -> Array.init (String.length l) (String.get l))
 
 let matrix = read_lines filename
-*)
-
-(* 2d matrix in lists -- better to convert to arrays
-  if any of the digits are touching a symbol
-  so start from digit clustering
-
-  so iter through line i
-    iter through line j
-      if digit - check for symbol then agglom
-      if . or symbol
-        if buffer has number, push to the list *)
 
 let touches_symbol i j arr =
   let directions = [-1; 0; 1] in
@@ -30,11 +18,13 @@ let touches_symbol i j arr =
       |> List.flatten in
    directional_vectors
     |> List.map (fun (x1, y1) -> 
-      let x2 = i + x1 in
-      let y2 = j + y1 in
+      let x2 = j + x1 in
+      let y2 = i + y1 in
       (y2 >= 0 && y2 < Array.length arr) &&
       (x2 >= 0 && x2 < Array.length arr.(0)) &&
+      (
       Re.Pcre.pmatch ~rex:(Re.Pcre.regexp "[^\\d\\.]") (Char.escaped arr.(y2).(x2)))
+      )
      |> List.exists (fun a -> a)
 
 let is_digit arr i j = Re.Pcre.pmatch ~rex:(Re.Pcre.regexp "\\d") (Char.escaped arr.(i).(j))
@@ -58,18 +48,11 @@ let convert_line_to_numbers full_arr i line =
         | None -> helper numbers_list "" false (j + 1) in
   helper [] "" false 0
 
-let test = [|
-              [|'$'; '1'; '3'|]; 
-              [|'5'; '2'; '.'|]; 
-              [|'.'; '.'; '*'|]
-           |]
-
+(
 let () = 
-  test
-    |> Array.mapi (convert_line_to_numbers test)
+  matrix
+    |> (fun a -> Array.mapi (convert_line_to_numbers a) a)
     |> Array.to_list
     |> List.flatten
     |> List.fold_left ( + ) 0
     |> Printf.printf "%d\n"
-
-
