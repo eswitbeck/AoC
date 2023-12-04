@@ -57,9 +57,9 @@ let () =
 (* part 2: written a day later *)
 
 let convert_matrix_to_piece_number_list matrix = 
-  let is_piece arr (y, x) = 
+  let is_gear arr (y, x) = 
     let open Re.Pcre in
-    pmatch ~rex:(regexp "[^\\d\\.]") arr.(y).(x) in
+    pmatch ~rex:(regexp "\\*") arr.(y).(x) in
 
   let get_valid_neighbors arr coord =
     let adjacent_vectors = 
@@ -87,7 +87,7 @@ let convert_matrix_to_piece_number_list matrix =
     |> Array.to_list
     |> List.map Array.to_list
     |> List.flatten
-    |> List.filter @@ is_piece matrix
+    |> List.filter @@ is_gear matrix
     |> List.map @@ get_valid_neighbors coord_matrix
     |> List.map @@ List.filter @@ is_number matrix
     |> List.map @@ List.map (fun (y, x) -> int_of_string matrix.(y).(x))
