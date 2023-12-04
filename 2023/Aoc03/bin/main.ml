@@ -57,6 +57,10 @@ let () =
 (* part 2: written a day later *)
 
 let convert_matrix_to_piece_number_list matrix = 
+  let is_piece arr (y, x) = 
+    let open Re.Pcre in
+    pmatch ~rex:(regexp "[^\\d\\.]") arr.(y).(x) in
+
   let get_valid_neighbors arr coord =
     let adjacent_vectors = 
       [(-1, -1); (-1, 0); (-1, 1);
@@ -69,15 +73,16 @@ let convert_matrix_to_piece_number_list matrix =
     adjacent_vectors
       |> List.map @@ add_coords coord 
       |> List.filter @@ is_valid_coordinate arr in
+
   let is_number arr (y, x) =
     let open Re.Pcre in
     pmatch ~rex:(regexp "\\d+") arr.(y).(x) in
+
   let remove_duplicates = List.sort_uniq ( - ) in
-  let is_piece arr (y, x) = 
-    let open Re.Pcre in
-    pmatch ~rex:(regexp "[^\\d\\.]") arr.(y).(x) in
+
   let coord_matrix = matrix 
     |> Array.mapi @@ fun i r -> Array.mapi (fun j _ -> (i, j)) r in
+
   coord_matrix
     |> Array.to_list
     |> List.map Array.to_list
@@ -91,31 +96,36 @@ let convert_matrix_to_piece_number_list matrix =
 let convert_piece_matrix_to_full_numbers matrix =
   let matrix_copy = Array.map (Array.map @@ fun a -> a) matrix
     |> Array.map @@ Array.map Char.escaped in
+
   let rec row_helper matrix number_buffer i j =
     let n = Array.length matrix.(0) in
+
     let flush_buffer () = if String.length number_buffer <> 0
       then Some number_buffer
       else None in
+
     match j with
     | j when j = n -> 
       begin
-      match flush_buffer () with
-      | Some num -> let len = n - 1 in
-        for x = j - String.length num to len do
-          matrix.(i).(x) <- num
-        done
-      | None -> ()
+        match flush_buffer () with
+        | Some num -> let len = n - 1 in
+          for x = j - String.length num to len do
+            matrix.(i).(x) <- num
+          done
+        | None -> ()
       end
     | _ -> let open Re.Pcre in
       if pmatch ~rex:(regexp "\\d+") matrix.(i).(j) then
         row_helper matrix (number_buffer ^ matrix.(i).(j)) i (j + 1)
       else 
         match flush_buffer() with
-          | Some num -> for x = j - String.length num to j - 1 do
-                matrix.(i).(x) <- num
-              done;
-              row_helper matrix "" i (j + 1)
+          | Some num ->
+            for x = j - String.length num to j - 1 do
+              matrix.(i).(x) <- num
+            done;
+            row_helper matrix "" i (j + 1)
           | None -> row_helper matrix number_buffer i (j + 1) in
+
   matrix_copy
     |> Array.iteri (fun i _ -> row_helper matrix_copy "" i 0);
   matrix_copy
