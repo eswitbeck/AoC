@@ -13,7 +13,7 @@ module String_map = Map.Make(String)
 
 type input = {
   lookup : node String_map.t;
-  start : coordinate;
+  start : node;
   map : map
 }
 
@@ -25,7 +25,7 @@ let openings_of_symbol = function
   | '7' -> [South; West]
   | 'F' -> [South; East]
   | '.' -> []
-  | 'S' -> [North; South; East; West]
+  | 'S' | '`' -> [North; South; East; West]
   | _ -> failwith "Illegal symbol"
 
 let move_direction (coord : coordinate) (dir : direction) : coordinate =
@@ -44,9 +44,8 @@ let is_reflexive (f: node) (t : node) =
   |> List.map @@ move_direction t.coordinate
   |> List.exists @@ (fun n c -> c = n.coordinate) f
 
-let explode_string s = List.init (String.length s) (String.get s)
-
 let map_of_filename (filename : string) : map =
+  let explode_string s = List.init (String.length s) (String.get s) in
   let open Re.Pcre in
   let read_file filename =
     In_channel.with_open_bin filename In_channel.input_all in
@@ -81,7 +80,7 @@ let input_of_map (m : map) : input =
     |> List.fold_left (fun m n -> String_map.add (string_of_coordinate n.coordinate) n m) String_map.empty
   in 
   { map = m;
-    start = get_start m;
+    start = String_map.find (string_of_coordinate @@ get_start m) lookup;
     lookup = lookup }
 
 let rec loop_length (i : input) (count : int) (n : node) : int =
@@ -119,7 +118,225 @@ let input =
   |> input_of_map
 
 let () =
-  String_map.find (string_of_coordinate input.start) input.lookup
+  input.start
   |> loop_length input 0
   |> farthest_point
   |> Printf.printf "Part 1 solution: %d\n"
+
+(* part 2 *)
+type node_2 = {
+  coordinate : coordinate;
+  openings : openings;
+  symbol : symbol;
+  visited : bool
+}
+type input_2 = {
+  lookup : node_2 String_map.t;
+  start : node_2;
+  map : map
+}
+
+let input_of_map_2 (m : map) : input_2 =
+  let lookup = m 
+    |> List.mapi (fun i r ->
+      List.mapi (fun j c -> {
+      coordinate = (j, i);
+      openings = openings_of_symbol c;
+      symbol = c;
+      visited = false }) r)
+    |> List.flatten
+    |> List.fold_left (fun m n -> String_map.add (string_of_coordinate n.coordinate) n m) String_map.empty
+  in 
+  { map = m;
+    start = String_map.find (string_of_coordinate @@ get_start m) lookup;
+    lookup = lookup }
+
+let is_reflexive_2 (f: node_2) (t : node_2) =
+  t.openings
+  |> List.map @@ move_direction t.coordinate
+  |> List.exists @@ (fun n c -> c = n.coordinate) f
+
+let rec get_loop (i : input_2) (count : int) (n : node_2) : (int * input_2) =
+  if n.visited
+  then (count, i)
+  else 
+    let neighbors =
+      n.openings
+      |> List.map @@ move_direction n.coordinate
+      |> List.filter @@ is_in_bounds i.map
+      |> List.map string_of_coordinate
+      |> List.map @@ (fun s -> String_map.find s i.lookup)
+      |> List.filter @@ is_reflexive_2 n
+    in
+    let updated_i = { i with lookup = String_map.add
+      (string_of_coordinate n.coordinate)
+      { n with visited = true }
+      i.lookup
+    } in
+    match neighbors with
+    | [] -> (Int.min_int, i)
+    | ns -> List.map (get_loop updated_i (count + 1)) ns
+      |> List.fold_left (fun (a, c) (b, d) -> 
+        if a > b then 
+          (a, c)
+        else
+          (b, d)
+        ) (Int.min_int, i)
+
+let replace_non_loop (m : map) (inp : input_2) : map =
+  List.mapi (fun i r ->
+    List.mapi (fun j _ -> 
+      let coord = (j, i) in
+      let node = String_map.find (string_of_coordinate coord) inp.lookup in
+      if node.visited
+      then
+        node.symbol
+      else
+        '`')
+    r) m
+
+let rec update_directions (i : input_2) (count : int) (n : node_2) : (int * input_2) =
+  if n.visited
+  then (count, i)
+  else 
+    let neighbors =
+      n.openings
+      |> List.map @@ (fun o -> (move_direction n.coordinate o, o))
+      |> List.filter @@ (fun (c, _) -> is_in_bounds i.map c)
+      |> List.map (fun (c, o) -> (string_of_coordinate c, o))
+      |> List.map @@ (fun (s, o) -> (String_map.find s i.lookup, o))
+      |> List.filter @@ (fun (m, _) -> is_reflexive_2 n m)
+    in
+    let update_i i dir = 
+    { i with lookup = String_map.add
+      (string_of_coordinate n.coordinate)
+      { n with visited = true;
+        symbol = match dir with
+        | North -> '^'
+        | South -> 'v'
+        | East -> '>'
+        | West -> '<'
+      }
+      i.lookup
+    } in
+    match neighbors with
+    | [] -> (Int.min_int, i)
+    | ns -> List.map (fun (n, o) -> update_directions (update_i i o) (count + 1) n) ns
+      |> List.fold_left (fun (a, c) (b, d) -> 
+        if a > b then 
+          (a, c)
+        else
+          (b, d)
+        ) (Int.min_int, i)
+
+let orthogonal_direction (s : symbol) : direction =
+  match s with
+  | '^' -> West
+  | 'v' -> East
+  | '>' -> North
+  | '<' -> South
+  | _ -> failwith "Illegal direction"
+
+(* need updater for inputs in fold *)
+
+let rec count_area (i : input_2) (n : node_2) : int * input_2 =
+  let neighbors =
+    n.openings
+    |> List.map @@ move_direction n.coordinate
+    |> List.filter @@ is_in_bounds i.map
+    |> List.map string_of_coordinate
+    |> List.map (fun s -> String_map.find s i.lookup)
+    |> List.filter (fun n -> n.symbol = '`')
+    |> List.filter (fun n -> not n.visited)
+  in
+  let fold_i acc_i i =
+    let l = acc_i.lookup in
+    let to_add = i.lookup in
+    let updated = to_add
+      |> String_map.bindings
+      |> List.filter (fun (_, n) -> n.visited)
+      |> List.fold_left (fun acc_map (k, n) -> String_map.add k n acc_map) l
+    in
+    { acc_i with lookup = updated }
+  in
+  let updated_i = { i with lookup = String_map.add
+    (string_of_coordinate n.coordinate)
+    { n with visited = true }
+    i.lookup
+  } in
+  match neighbors with
+  | [] -> (1, updated_i)
+  | ns ->
+    List.map (count_area i) ns
+    |> List.fold_left (fun (acc_c, acc_i) (c, i) -> (acc_c + c, fold_i acc_i i)) (1, updated_i)
+
+let count_interior (i : input_2) (n : node_2) : int * input_2 =
+  let pre_interior = orthogonal_direction n.symbol in
+  let interior = [pre_interior]
+    |> List.map @@ move_direction n.coordinate
+    |> List.filter @@ is_in_bounds i.map
+    |> List.map string_of_coordinate
+    |> List.map (fun s -> String_map.find s i.lookup)
+    |> List.filter (fun n -> n.symbol = '`')
+    |> List.filter (fun n -> not n.visited)
+  in
+  match interior with
+  | [] -> (0, i)
+  | inte -> count_area i (List.hd inte)
+
+let rec count_interiors (i : input_2) (path_count : int) (interior_count) (n : node_2) : int * input_2 * int =
+  if n.visited
+  then (path_count, i, interior_count)
+  else 
+    let neighbors =
+      n.openings
+      |> List.map @@ move_direction n.coordinate
+      |> List.filter @@ is_in_bounds i.map
+      |> List.map string_of_coordinate
+      |> List.map @@ (fun s -> String_map.find s i.lookup)
+      |> List.filter @@ is_reflexive_2 n
+      |> List.filter (fun n -> not n.visited)
+    in
+    let (int_count, u_i) = count_interior i n in
+    let updated_i = { u_i with lookup = String_map.add
+      (string_of_coordinate n.coordinate)
+      { n with visited = true }
+      u_i.lookup
+    } in
+    match neighbors with
+    | [] -> (Int.min_int, i, interior_count)
+    | ns -> List.map (count_interiors updated_i (path_count + 1) (interior_count + int_count)) ns
+      |> List.fold_left (fun (a, c, e) (b, d, f) -> 
+        if a > b then 
+          (a, c, e)
+        else
+          (b, d, f)
+        ) (Int.min_int, i, 0)
+  
+(*
+let pp_map (m : map) =
+  m
+  |> List.iter (fun r -> 
+    List.iter (fun c -> 
+      Printf.printf "%c" c)
+    r; Printf.printf "\n")
+    *)
+
+let input_2 = 
+  filename
+  |> map_of_filename
+  |> input_of_map_2
+
+let () =
+  input_2.start
+  |> get_loop input_2 0
+  |> snd
+  |> replace_non_loop input_2.map
+  |> input_of_map_2
+  |> (fun i -> i.start)
+  |> update_directions input_2 0
+  |> snd
+  |> replace_non_loop input_2.map
+  |> input_of_map_2
+  |> (fun i -> count_interiors i 0 0 i.start)
+  |> (fun (_, _, c) -> Printf.printf "Part 2 solution: %d\n" c)
