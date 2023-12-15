@@ -86,37 +86,41 @@ const updatedInput = input
     trace[coordToString([j,i])] ? inputAt(input, [j, i]) : '`'
   ));
 
-const orthogonal = (start, [x2, y2]) => {
+const orthogonal = (start, end) => {
   const [x1, y1] = start;
+  const [x2, y2] = end;
   const x = x2 - x1;
   const y = y2 - y1;
   
   const move = (coord, dir) => {
-    return addVec(coord, directionLookup[dir]);
+    const r = addVec(coord, directionLookup[dir]);
+    return r;
   }
 
   if (x === 1) {
-    return move([x2, y2], 's');
+    return move(start, 's');
   } else if (x === -1) {
-    return move([x2, y2], 'n');
+    return move(start, 'n');
   } else if (y === 1) {
-    return move([x2, y2], 'e');
+    return move(start, 'w');
   } else if (y === -1) {
-    return move([x2, y2], 'w');
+    return move(start, 'e');
   }
 }
 
 const sumAdjacent = (c, input, visited) => {
-  if (!isInBounds(c)) return 0;
-  if (!inputAt(input, c) === '`' || visited[coordToString(c)]) return 0;
+  console.log('in', c, inputAt(input, c));
+  if (!isInBounds(c)) return [0, visited];
+  if (inputAt(input, c) !== '`' || visited[coordToString(c)]) return [0, visited];
   else {
+    console.log('passed', c, inputAt(input, c));
     const neighbors = applyLookups(c, input)
       .filter(co => isReflexive(c, co, input))
       .filter(co => !visited[coordToString(co)])
 
-    return 1 + neighbors.map(c =>
+    return neighbors.map(c =>
       sumAdjacent(c, input, { ...visited, [coordToString(c)]: true }))
-      .reduce((a, b) => a + b, 0);
+      .reduce(([a, v1], [b, v2]) => [a + b, { ...v1, ...v2}], [0, {}]);
   }
 }
 
@@ -133,14 +137,15 @@ const countInteriors = (coord, input) => {
 
     if(!neighbors.length) return intCount;
 
-    q.push(...neighbors.map(co =>
-      [
+    q.push(...neighbors.map(co => {
+      const [resSum, resVis] = sumAdjacent(orthogonal(c, co), input, {...visited})
+      return [
         co,
         count + 1,
-        { ...visited, [coordToString(c)]: true },
-        intCount + sumAdjacent(orthogonal(c, co), input, {})
+        { ...visited, ...resVis, [coordToString(c)]: true },
+        intCount + resSum
       ]
-    ));
+    }));
   }
 }
 
