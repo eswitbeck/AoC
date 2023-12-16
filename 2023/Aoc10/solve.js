@@ -8,7 +8,7 @@ const convertFileToMatrix = (file) =>
   file.split('\n')
   .map(s => s.split(''));
 
-const fileName = 'test_input';
+const fileName = 'input';
 
 const input = convertFileToMatrix(fetchFile(fileName));
 
@@ -28,7 +28,7 @@ const symbolLookup = {
   'F': ['s', 'e'],
   '.': [],
   'S': ['n', 's', 'e', 'w'],
-  '`': ['n', 's', 'e', 'w']
+  '*': ['n', 's', 'e', 'w']
 }
 
 const addVec = ([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2];
@@ -62,6 +62,7 @@ const isReflexive = (from, to, input) => {
 }
 
 const tracePath = (coord, input) => {
+  console.log('tracing...');
   const q = [[coord, 0, {}]];
   while (q.length) {
     const [c, count, visited] = q.pop();
@@ -71,7 +72,10 @@ const tracePath = (coord, input) => {
       .filter(co => isReflexive(c, co, input))
       .filter(co => !visited[coordToString(co)])
 
-    if(!neighbors.length) return { ...visited, [coordToString(c)]: true };
+    if(!neighbors.length) {
+      console.log('traced');
+      return { ...visited, [coordToString(c)]: true };
+    }
 
     q.push(...neighbors.map(co =>
       [co, count + 1, { ...visited, [coordToString(c)]: true }]
@@ -83,7 +87,7 @@ const trace = tracePath(start, input);
 
 const updatedInput = input
   .map((r, i) => r.map((c, j) => 
-    trace[coordToString([j,i])] ? inputAt(input, [j, i]) : '`'
+    trace[coordToString([j,i])] ? inputAt(input, [j, i]) : '*'
   ));
 
 const orthogonal = (start, end) => {
@@ -109,22 +113,30 @@ const orthogonal = (start, end) => {
 }
 
 const sumAdjacent = (c, input, visited) => {
-  console.log('in', c, inputAt(input, c));
-  if (!isInBounds(c)) return [0, visited];
-  if (inputAt(input, c) !== '`' || visited[coordToString(c)]) return [0, visited];
-  else {
-    console.log('passed', c, inputAt(input, c));
-    const neighbors = applyLookups(c, input)
-      .filter(co => isReflexive(c, co, input))
-      .filter(co => !visited[coordToString(co)])
-
-    return neighbors.map(c =>
-      sumAdjacent(c, input, { ...visited, [coordToString(c)]: true }))
-      .reduce(([a, v1], [b, v2]) => [a + b, { ...v1, ...v2}], [0, {}]);
+  if (visited[coordToString(c)] ||
+      ! isInBounds(c) ||
+      inputAt(input, c) !== '*') {
+    return [0, visited];
   }
+
+  const q = [c];
+  let vis = { ...visited };
+  let total = 0;
+  while (q.length) {
+    const coord = q.pop();
+    const neighbors = applyLookups(coord, input)
+      .filter(co => inputAt(input, co) === '*')
+      .filter(co => !vis[coordToString(co)])
+
+    vis[coordToString(coord)] = true;
+    q.unshift(...neighbors);
+  }
+  return [total, vis];
 }
 
 const countInteriors = (coord, input) => {
+  console.log('counting interiors...');
+  const results = [];
   const q = [[coord, 0, {}, 0]];
   while (q.length) {
     const [c, count, visited, intCount] = q.pop();
@@ -132,22 +144,43 @@ const countInteriors = (coord, input) => {
 
     const neighbors = applyLookups(c, input)
       .filter(co => isReflexive(c, co, input))
-      .filter(co => inputAt(input, co) !== '`')
+      .filter(co => inputAt(input, co) !== '*')
       .filter(co => !visited[coordToString(co)])
 
-    if(!neighbors.length) return intCount;
+    if(!neighbors.length) results.push([count, intCount, visited]);
 
     q.push(...neighbors.map(co => {
-      const [resSum, resVis] = sumAdjacent(orthogonal(c, co), input, {...visited})
+      const [resSum, resVis] = sumAdjacent(orthogonal(c, co), input, visited);
+      const remaining = Object.keys(resVis).filter(k => ! Object.hasOwn(visited, k));
+      const copy = { ...visited };
+      remaining.forEach(k => { copy[k] = true; });
+      copy[coordToString(c)] = true;
       return [
         co,
         count + 1,
-        { ...visited, ...resVis, [coordToString(c)]: true },
-        intCount + resSum
+        copy,
       ]
     }));
   }
+  console.log('counted');
+  return results;
 }
 
-updatedInput.forEach(r => console.log(r.join('')));
-console.log(countInteriors(start, updatedInput));
+const inputLog = input => {
+  input.forEach(r => console.log(r.join('')));
+  console.log();
+}
+
+const res = (countInteriors(start, updatedInput));
+
+const visToFinal = (vis, input) => {
+  return input.map((r, i) => 
+    r.map((c, j) => 
+      vis[coordToString([j,i])] ? '$' : c
+  ))
+}
+
+console.log(
+res.map(([c, i, v]) => visToFinal(v, updatedInput))
+  .map(i => i.flat(2).filter(x => x === '*').length)
+  )
