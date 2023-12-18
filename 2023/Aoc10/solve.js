@@ -8,7 +8,7 @@ const convertFileToMatrix = (file) =>
   file.split('\n')
   .map(s => s.split(''));
 
-const fileName = 'input';
+const fileName = "input";
 
 const input = convertFileToMatrix(fetchFile(fileName));
 
@@ -83,7 +83,7 @@ const getDir = (c1, c2) => {
 }
 
 const tracePath = (coord, input) => {
-  console.log('tracing...');
+  console.log('tracing part 1...');
   const results = [];
   const q = [[coord, 0, {}]];
   while (q.length) {
@@ -96,11 +96,13 @@ const tracePath = (coord, input) => {
 
     if(!neighbors.length) {
       const dir = getDir(start, c)
+      // the visited copy is the complexity bottleneck on part 1
       results.push({ ...visited, [coordToString(c)]: dir });
     }
 
     q.push(...neighbors.map(co => {
       const dir = getDir(c, co);
+      // the visited copy is the complexity bottleneck on part 1
       return [co, count + 1, { ...visited, [coordToString(c)]: dir }]
     }));
   }
@@ -116,6 +118,7 @@ const updateInput = (trace) =>
     trace[coordToString([j,i])] ? trace[coordToString([j,i])] : '*'
   ));
 
+// remove all non-loop tiles
 const updates = trace.map(updateInput);
 
 const orthogonal = (start, end) => {
@@ -130,21 +133,17 @@ const orthogonal = (start, end) => {
   }
 
   if (x === 1) {
-    return move(start, 's');
+    return [move(start, 'n'), move(end, 'n')];;
   } else if (x === -1) {
-    return move(start, 'n');
+    return [move(start, 's'), move(end, 's')];;
   } else if (y === 1) {
-    return move(start, 'w');
+    return [move(start, 'e'), move(end, 'e')];
   } else if (y === -1) {
-    return move(start, 'e');
+    return [move(start, 'w'), move(end, 'w')];;
   }
 }
 
-const inputLog = input => {
-  input.forEach(r => console.log(r.join('')));
-  console.log();
-}
-
+// convert all visited tiles
 const visToFinal = (vis, input) => {
   return input.map((r, i) => 
     r.map((c, j) => 
@@ -152,15 +151,15 @@ const visToFinal = (vis, input) => {
   ))
 }
 
-const sumAdjacent = (c, input, visited) => {
-  if (visited[coordToString(c)] ||
-      ! isInBounds(c) ||
-      inputAt(input, c) !== '*') {
-    return [0, visited];
-  }
+const sumAdjacent = (cs, input, visited) => {
+  // because the graph is reduced to one direction and we don't have to explore
+  // dead ends, we can mutate visited directly to keep the search as a constant
+  cs = cs.filter(c =>
+      ! visited[coordToString(c)] &&
+      isInBounds(c) &&
+      inputAt(input, c) === '*');
 
-  const q = [c];
-  let total = 0;
+  const q = [...cs];
   while (q.length) {
     const coord = q.pop();
     const neighbors = applyLookups(coord, input)
@@ -170,49 +169,38 @@ const sumAdjacent = (c, input, visited) => {
     visited[coordToString(coord)] = true;
     q.push(...neighbors);
   }
-  return [total, visited];
+  return visited;
 }
 
+// retrace along loop, checking all orthogonal tiles (in one direction)
 const countInteriors = (coord, input) => {
-  console.log('counting interiors...');
-  const results = [];
-  const q = [[coord, 0, {}, 0, {}]];
+  const q = [[coord, {}, {}]];
   while (q.length) {
-    const [c, count, visited, intCount, intVisited] = q.pop();
-//    inputLog(visToFinal(intVisited, input));
+    const [curr, visited, intVisited] = q.pop();
 
-    const neighbors = applyLookups(c, input)
+    const neighbors = applyLookups(curr, input)
       .filter(co => inputAt(input, co) !== '*')
       .filter(co => !visited[coordToString(co)])
 
-
-    if(!neighbors.length) results.push([count, intCount, intVisited]);
-
-    else {
-      q.push(...neighbors.map(co => {
-        const [resSum, resVis] = sumAdjacent(orthogonal(c, co), input, intVisited);
-        visited[coordToString(c)] = true;
-        return [
-          co,
-          count + 1,
-          visited,
-          0,
-          resVis
-        ]
+    if(!neighbors.length) return intVisited; // because there's only one way to
+    else {                                   // complete the loop, we can return
+      q.push(...neighbors.map(co => {        // immediately
+        const resVis = sumAdjacent(orthogonal(curr, co), input, intVisited);
+        visited[coordToString(curr)] = true;
+        return [ co, visited, resVis ]
       }));
     }
   }
-  console.log('counted');
-  return results[0]; // only one now
 }
 
-const res = updates.map( u => countInteriors(start, u));
+console.log('beginning part 2');
+const res = updates.map(u => countInteriors(start, u));
 
 console.log(
-res.map(([c, i, v], j) => [v, visToFinal(v, updates[j])])
-  .map(([v, i]) => {console.log(Object.keys(v).length); return i; })
-  .map((f, j) => { inputLog(f, updates[j]); return f })
-  .map(i => { const flat = i.flat(2);
-    return [flat.filter(x => x === '*').length,
-            flat.filter(x => x === '$').length]
-  }))
+  res.map((v, j) => visToFinal(v, updates[j]))
+    .map(i => { const flat = i.flat(2);
+      return [flat.filter(x => x === '*').length,
+              flat.filter(x => x === '$').length]
+    })
+    // all versions will be equivalent, but inverted. We can just take one
+    .map(a => Math.min(...a))[0]);
