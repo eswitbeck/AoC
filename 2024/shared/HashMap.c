@@ -53,18 +53,74 @@ int hashmap_size(esw_HashMap *h) {
   return h ? h->total_size : 0;
 }
 
-static size_t hash(char *key, size_t number_of_buckets){
+static size_t hash(const char *key, size_t number_of_buckets){
   if (!key || 0 == number_of_buckets) {
     return -1;
   }
 
+  const char *p = key;
+
   uint64_t hash = 0;
   char c;
-  while ((c = *key++) != '\0') {
+  while ((c = *p++) != '\0') {
     hash = hash * 31 + c;
   }
 
   return hash % number_of_buckets;
+}
+
+static int hashmap_resize(esw_HashMap *h) {
+  if (!h) {
+    return -1;
+  }
+
+  _esw_Bucket *buckets_buffer =
+    calloc(h->number_of_buckets * 2, sizeof(_esw_Bucket));
+
+  if (!buckets_buffer) {
+    return -1;
+  }
+
+  size_t total_moved = 0;
+
+  for (size_t i = 0; i < h->number_of_buckets; i++) {
+    _esw_Bucket *bucket = &h->buckets[i];
+
+    _esw_ListNode *head = bucket->contents;
+    if (!head) {
+      continue;
+    }
+
+    while (head) {
+      _esw_ListNode *temp = head->next;
+
+      size_t bucket_i =
+        hash(head->key, h->number_of_buckets * 2);
+      _esw_Bucket *destination = &buckets_buffer[bucket_i];
+
+      if (!destination->contents) {
+        destination->contents = head;
+        destination->length = 1;
+      } else {
+        _esw_ListNode *new_head = destination->contents;
+        while(new_head->next) {
+          new_head = new_head->next;
+        }
+        new_head->next = head;
+        destination->length++;
+      }
+
+      head->next = NULL;
+      total_moved++;
+      head = temp;
+    }
+  }
+
+  free(h->buckets);
+  h->buckets = buckets_buffer;
+  h->number_of_buckets *= 2;
+
+  return total_moved;
 }
 
 void hashmap_put(esw_HashMap *h, char *key, void *element) {
@@ -72,17 +128,11 @@ void hashmap_put(esw_HashMap *h, char *key, void *element) {
     return;
   }
 
-  // TODO needs writing to a new buffer and rehashing all existing elements
   if (h->total_size > esw_BUCKET_CAPACITY_THRESHOLD * h->number_of_buckets) {
-    h->number_of_buckets *= 2;
-    _esw_Bucket *buckets_buffer =
-      realloc(h->buckets, h->number_of_buckets * sizeof(_esw_Bucket));
-
-    if (!buckets_buffer) {
-      h->number_of_buckets /= 2;
+    int result = hashmap_resize(h);
+    if (-1 == result) {
       return;
     }
-    h->buckets = buckets_buffer;
   }
 
   size_t bucket_i = hash(key, h->number_of_buckets);
