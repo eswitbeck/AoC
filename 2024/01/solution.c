@@ -69,6 +69,7 @@ int main() {
     free(pair_strs[i]);
   }
   free(pair_strs);
+  free(input);
 
   return 0;
 }
