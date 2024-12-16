@@ -48,7 +48,7 @@ char *read_file(const char *filename, int *length) {
     return NULL;
   }
 
-  *length = len;
+  *length = len - 1;
   fclose(fp);
   return string_buffer;
 }
@@ -120,5 +120,10 @@ char **split_string(const char *string, const char *split, size_t *length) {
 
   free(string_copy);
   *length = return_len;
+
+  char **final_array = realloc(string_array, return_len * sizeof(char *));
+  if (final_array) {
+    string_array = final_array;
+  }
   return string_array;
 }
